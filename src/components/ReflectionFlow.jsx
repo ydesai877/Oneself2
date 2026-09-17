@@ -14,7 +14,6 @@ export default function ReflectionFlow({
   currentIndex,
   ratings,
   reflections,
-  onSaveAnswer,
   onNext,
   onBack,
   onExit,
@@ -32,16 +31,6 @@ export default function ReflectionFlow({
 
   function updateField(key, value) {
     setDraft((prev) => ({ ...prev, [key]: value }))
-  }
-
-  function handleContinue() {
-    onSaveAnswer(segmentId, draft)
-    onNext()
-  }
-
-  function handleBack() {
-    onSaveAnswer(segmentId, draft)
-    onBack()
   }
 
   return (
@@ -75,10 +64,13 @@ export default function ReflectionFlow({
       </div>
 
       <div className="row-actions">
-        <button className="secondary-btn" onClick={currentIndex === 0 ? onExit : handleBack}>
+        <button
+          className="secondary-btn"
+          onClick={() => (currentIndex === 0 ? onExit(draft) : onBack(draft))}
+        >
           {currentIndex === 0 ? 'Save & exit' : 'Back'}
         </button>
-        <button className="primary-btn" disabled={!allFilled} onClick={handleContinue}>
+        <button className="primary-btn" disabled={!allFilled} onClick={() => onNext(draft)}>
           {isLast ? 'Continue' : 'Next area'}
         </button>
       </div>
