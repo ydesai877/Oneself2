@@ -66,30 +66,34 @@ export default function App() {
     persist({ ...session, status: 'reflecting', reflectionOrder: order, currentReflectionIndex: 0 })
   }
 
-  function handleSaveReflectionAnswer(segmentId, answers) {
-    const next = {
-      ...session,
-      reflections: { ...session.reflections, [segmentId]: answers },
-    }
-    persist(next)
-  }
-
-  function handleReflectionNext() {
+   function handleReflectionNext(draft) {
+    const segmentId = session.reflectionOrder[session.currentReflectionIndex]
+    const reflections = { ...session.reflections, [segmentId]: draft }
     const nextIndex = session.currentReflectionIndex + 1
     if (nextIndex >= session.reflectionOrder.length) {
-      persist({ ...session, status: 'closing' })
+      persist({ ...session, reflections, status: 'closing' })
     } else {
-      persist({ ...session, currentReflectionIndex: nextIndex })
+      persist({ ...session, reflections, currentReflectionIndex: nextIndex })
     }
   }
 
-  function handleReflectionBack() {
+  function handleReflectionBack(draft) {
+    const segmentId = session.reflectionOrder[session.currentReflectionIndex]
+    const reflections = { ...session.reflections, [segmentId]: draft }
     const prevIndex = Math.max(0, session.currentReflectionIndex - 1)
     if (session.currentReflectionIndex === 0) {
-      persist({ ...session, status: 'rating' })
+      persist({ ...session, reflections, status: 'rating' })
     } else {
-      persist({ ...session, currentReflectionIndex: prevIndex })
+      persist({ ...session, reflections, currentReflectionIndex: prevIndex })
     }
+  }
+
+  function handleReflectionExit(draft) {
+    const segmentId = session.reflectionOrder[session.currentReflectionIndex]
+    const reflections = { ...session.reflections, [segmentId]: draft }
+    persist({ ...session, reflections })
+    setSession(null)
+    refreshHome()
   }
 
   function handleSaveClosing(answers) {
@@ -182,10 +186,9 @@ export default function App() {
         currentIndex={session.currentReflectionIndex}
         ratings={session.ratings}
         reflections={session.reflections}
-        onSaveAnswer={handleSaveReflectionAnswer}
         onNext={handleReflectionNext}
         onBack={handleReflectionBack}
-        onExit={handleExitToHome}
+        onExit={handleReflectionExit}
       />
     )
   } else if (session.status === 'closing') {
